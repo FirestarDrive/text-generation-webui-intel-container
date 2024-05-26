@@ -8,24 +8,22 @@ RUN apt-get update && \
     unzip \
     wget \
     libgomp1 \
+    ocl-icd-libopencl1 \
+    clinfo \
     && rm -rf /var/lib/apt/lists/
 
-# Prepare Intel Graphics driver index.
-# Use 'flex' as ${DEVICE} for consumer-grade Arc series GPUs
-ARG DEVICE=flex
-RUN wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | \
-    gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
-    printf 'deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy %s\n' "$DEVICE" | \
-    tee /etc/apt/sources.list.d/intel.gpu.jammy.list
-
-# Install Intel GPU drivers
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
-    'intel-opencl-icd=23.17.26241.33-647~22.04' \
-    'intel-level-zero-gpu=1.3.26241.33-647~22.04' \
-    'level-zero=1.11.0-647~22.04' \
-    'level-zero-dev=1.11.0-647~22.04' \
-    && rm -rf /var/lib/apt/lists/
+# Install Intel GPU drivers.
+# Linux kernel 6.8 workaround inspired by @mattcurf in
+# https://github.com/mattcurf/ollama-intel-gpu/pull/2/files
+RUN cd /tmp && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16510.2/intel-igc-core_1.0.16510.2_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16510.2/intel-igc-opencl_1.0.16510.2_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.13.29138.7/intel-level-zero-gpu_1.3.29138.7_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.13.29138.7/intel-opencl-icd_24.13.29138.7_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.13.29138.7/libigdgmm12_22.3.18_amd64.deb && \
+    wget https://github.com/oneapi-src/level-zero/releases/download/v1.16.14/level-zero_1.16.14+u20.04_amd64.deb && \
+    apt install --no-install-recommends -q -y ./*.deb && \
+    rm -rf ./*.deb
 
 # Install Intel DPCPP runtime. The Pip+ldconfig way is cleaner than deb-packages
 # because the libs become available container-wide, without sourcing setvars.sh

@@ -5,8 +5,8 @@ for use with Intel Arc GPUs, using `python:3.11-slim-bookworm` as the base image
 
 ## Does this actually work?
 
-I've tested it on Ubuntu 23.10 host with Linux kernel 6.5.0 using in-tree (builtin) drivers
-on Intel Arc A770M (the laptop version of the A770) with Podman 4.6. The 6.2 kernel should work too.
+I've tested it on Ubuntu 24.04 host with Linux kernel 6.8.0-31 using in-tree (builtin) drivers
+on Intel Arc A770M (the laptop version of the A770) with Podman 4.9.3.
 
 ### How fast is this?
 
